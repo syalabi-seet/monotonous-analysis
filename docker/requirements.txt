@@ -1,0 +1,6 @@
+numpy==1.19.5
+tensorflow
+soundfile
+librosa
+boto3
+psycopg2-binary

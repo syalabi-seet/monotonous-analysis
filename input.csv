@@ -1,0 +1,2 @@
+﻿s3_uri,group_id,schedule_id
+s3://audiosnippet-bucket/inputs/inference/audio_files/videoplayback_16k.wav,1,1
