@@ -317,18 +317,21 @@ if __name__ == '__main__':
                     (s3_uri,))
 
                 # Insert data in audio_analysis table
-                cursor.execute(
-                    "INSERT INTO audio_analysis(time_period, monotone_percentage, class_id, schedule_id) " \
-                    "VALUES (%s, %s, %s, %s)",
-                    (str(logs['mono_segments']), str(logs['segment_ratio']), class_id, schedule_id)
-                )
+                for start_time, end_time, segment_ratio in zip(logs['start_time'], logs['end_time'], logs['segment_ratio']):
+                    cursor.execute(
+                        "INSERT INTO audio_analysis(start_time, end_time, monotone_percentage, class_id, schedule_id) " \
+                        "VALUES (%s, %s, %s, %s, %s)",
+                        (str(start_time), str(end_time), str(segment_ratio), class_id, schedule_id)
+                    )
 
                 # Insert data in audio_clip_analysis table
-                cursor.execute(
-                    "INSERT INTO audio_clip_analysis(start_time, end_time, output_uri, monotone_percentage, class_id, schedule_id) " \
-                    "VALUES (%s, %s, %s, %s, %s, %s)",
-                    (str(logs['start_time']), str(logs['end_time']), str(logs['output_uri']), logs['total_ratio'], class_id, schedule_id)
-                )
+                for start_time, end_time, output_uri, monotone_percentage in zip(
+                    logs['start_time'], logs['end_time'], logs['output_uri'], logs['total_ratio']):
+                    cursor.execute(
+                        "INSERT INTO audio_clip_analysis(start_time, end_time, output_uri, monotone_percentage, class_id, schedule_id) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s)",
+                        (str(start_time), str(end_time), str(output_uri), str(monotone_percentage), class_id, schedule_id)
+                    )
 
         connection.commit()
         print("INFO -- Database updated.")             
