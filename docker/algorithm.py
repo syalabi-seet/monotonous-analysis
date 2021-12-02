@@ -146,7 +146,9 @@ class MonoTracker:
         total_mono, total_voiced, mean = 0, 0, 0
         logs = {
             'source_uri': wav_path,'segment_ratio': [], 'mono_segments': [], 
-            'total_ratio': 0, 'output_uri': [], 'local_output_uri': [], 'start_time': [], 'end_time': []}
+            'total_ratio': 0, 'output_uri': [], 'local_output_uri': [], 
+            'start_time': [], 'end_time': [], 'frame_start': [],
+            'frame_end': []}
         file_path = os.path.splitext(wav_path.split("/")[-1])[0]
         for i, y_chunk in enumerate(self.ChunkGenerator(wav_path)):
             total = 0
@@ -226,6 +228,8 @@ class MonoTracker:
                     print("{}/{} - voiced_ratio: {:.2f}% - words: {} - monotonic_frames: {} - monotonic_ratio: {:.2f}% - elapsed_time: {:.2f}s".format(
                         i+1, self.n_chunks, voiced_ratio*100, len(words), total, mono_ratio*100, elapsed_time))
             
+            logs['frame_start'].append(i*self.chunk_duration)
+            logs['frame_end'].append(i*self.chunk_duration + self.chunk_duration)
             logs['segment_ratio'].append(mono_ratio)
             total_mono += total
             total_voiced += voiced_sum
@@ -317,20 +321,21 @@ if __name__ == '__main__':
                     (s3_uri,))
 
                 # Insert data in audio_analysis table
-                for start_time, end_time, segment_ratio in zip(logs['start_time'], logs['end_time'], logs['segment_ratio']):
+                for audio_id, (start_time, end_time, segment_ratio) in enumerate(
+                        zip(logs['frame_start'], logs['frame_end'], logs['segment_ratio'])):
                     cursor.execute(
-                        "INSERT INTO audio_analysis(start_time, end_time, monotone_percentage, class_id, schedule_id) " \
-                        "VALUES (%s, %s, %s, %s, %s)",
-                        (str(start_time), str(end_time), str(segment_ratio), class_id, schedule_id)
+                        "INSERT INTO audio_analysis(audioanalysisid, start_time, end_time, monotone_percentage, class_id, schedule_id) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s)",
+                        (str(audio_id), str(start_time), str(end_time), str(segment_ratio), class_id, schedule_id)
                     )
 
                 # Insert data in audio_clip_analysis table
-                for start_time, end_time, output_uri, monotone_percentage in zip(
-                    logs['start_time'], logs['end_time'], logs['output_uri'], logs['total_ratio']):
+                for start_time, end_time, output_uri in zip(
+                    logs['start_time'], logs['end_time'], logs['output_uri']):
                     cursor.execute(
                         "INSERT INTO audio_clip_analysis(start_time, end_time, output_uri, monotone_percentage, class_id, schedule_id) " \
                         "VALUES (%s, %s, %s, %s, %s, %s)",
-                        (str(start_time), str(end_time), str(output_uri), str(monotone_percentage), class_id, schedule_id)
+                        (str(start_time), str(end_time), str(output_uri), logs['total_ratio'], class_id, schedule_id)
                     )
 
         connection.commit()

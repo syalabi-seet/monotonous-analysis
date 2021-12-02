@@ -1,7 +1,9 @@
 # Monotony Tracker
 
 ## Model Architecture
-![Model](extras/model.png)
+![Model](extras/model_arch_2.png)
+
+![Model_arch](extras/model_arch.png)
 
 ## Setup
 ![Diagram](extras/diagram.png)
@@ -100,6 +102,7 @@ psycopg2-binary
 - Use boto3 functions to deploy Sagemaker Processing Jobs
 - Utilize `g4dn.xlarge` instance type made up of T4 GPUs for most optimal performance and pricing https://aws.amazon.com/ec2/instance-types/
 - Insert important variables like keys and passwords into test inputs and call as dictionary for safety
+- Pass container arguments through Python's argparse functions
 - ProcessingJobs accepts multiple inputs and outputs, just add into the ProcessingInput function
 - An Output has to be specified, can simply output an empty json/csv into an S3 Bucket if no output is required
 ```
